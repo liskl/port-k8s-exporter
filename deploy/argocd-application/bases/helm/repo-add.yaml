@@ -1,0 +1,45 @@
+---
+apiVersion: v1
+kind: Secret
+metadata:
+    labels:
+        app.kubernetes.io/part-of: argocd
+        argocd.argoproj.io/secret-type: repo-creds
+    name: argocd-repo-creds-port-k8s-exporter-repo
+data:
+  # not a secret but a git repo url
+    url: aHR0cHM6Ly9naXRodWIuY29tL2xpc2tsL3BvcnQtazhzLWV4cG9ydGVyLmdpdA==
+type: Opaque
+---
+apiVersion: v1
+kind: Secret
+metadata:
+    labels:
+        app.kubernetes.io/part-of: argocd
+        argocd.argoproj.io/secret-type: repository
+    name: argocd-repo-port-k8s-exporter
+data:
+  # not a secret but a git repo url and the name of the git repo.
+    name: cG9ydC1rOHMtZXhwb3J0ZXI=
+    url: aHR0cHM6Ly9naXRodWIuY29tL2xpc2tsL3BvcnQtazhzLWV4cG9ydGVyLmdpdA==
+type: Opaque
+---
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
+metadata:
+    name: argocd-repo-creds-port-k8s-exporter-repo
+spec:
+    refreshInterval: 24h        # rate SecretManager pulls from AWS SecretManager
+    secretStoreRef:
+        kind: ClusterSecretStore
+        name: secretstore-parameter-store
+    target:
+        name: argocd-repo-creds-port-k8s-exporter-repo
+        creationPolicy: Merge
+    data:
+        - secretKey: username
+          remoteRef:
+              key: /ci/github/github-user
+        - secretKey: password
+          remoteRef:
+              key: /ci/github/github-token
